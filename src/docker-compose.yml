@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  freecad_build_service:
+    image: "${IMAGE_NAME}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - IMAGE_FREECAD_DOCKER
+        - FOLDER_SOURCE
+    working_dir: /root
+
+  freecad_contaier_service:
+    container_name: "${CONTAINER_NAME}"
+    image: "${IMAGE_NAME}"
+    volumes:
+      - type: volume
+        source: "${FOLDER_SOURCE}"
+        target: /mnt/source
+      - type: volume
+        source: "${FOLDER_BUILD}"
+        target: /mnt/build
+      - type: bind
+        source: "./${FOLDER_FILES}"
+        target: /mnt/files
+      - type: bind
+        source: /tmp/.X11-unix
+        target: /tmp/.X11-unix
+        read_only: true
+    depends_on:
+      - freecad_build_service
+    working_dir: /root
+    entrypoint: /mnt/build/bin/FreeCAD --version
+
+volumes:
+  "${FOLDER_SOURCE}": { }
+  ${FOLDER_BUILD}: { }
